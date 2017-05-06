@@ -6,9 +6,11 @@ Main executable for ING2YNAB csv converter.
 @author: Luc van Dort
 """
 
-import sys, os
+import sys
+import os
 import pandas as pd
-from PyQt5.QtWidgets import QAction, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QGridLayout, QHBoxLayout, QVBoxLayout, QApplication, QDesktopWidget, QFileDialog
+from PyQt5.QtWidgets import QAction, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, \
+    QGridLayout, QHBoxLayout, QVBoxLayout, QApplication, QDesktopWidget, QFileDialog
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
 
@@ -20,6 +22,7 @@ EXPORT_COLUMNS = [
     "Outflow",
     "Inflow"
 ]
+
 
 class MainWindow(QMainWindow):
 
@@ -34,9 +37,11 @@ class MainWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.selectInputfile = QAction(QIcon('open.png'), 'Select input file', self)
+        self.selectInputfile = QAction(
+            QIcon('open.png'), 'Select input file', self)
         self.selectInputfile.triggered.connect(self.inputfileDialog)
-        self.selectOutputfolder = QAction(QIcon('open.png'), 'Select output folder', self)
+        self.selectOutputfolder = QAction(
+            QIcon('open.png'), 'Select output folder', self)
         self.selectOutputfolder.triggered.connect(self.outputfolderDialog)
 
         self.menubar = self.menuBar()
@@ -52,19 +57,21 @@ class MainWindow(QMainWindow):
     def inputfileDialog(self):
         filename = QFileDialog.getOpenFileName(self, 'Select input file')
         self.main_widget.inputfile.setText(filename[0])
-        path, file = os.path.split(filename[0])  
-        self.main_widget.outputfolder.setText(os.path.join(path,"YNAB"))
+        path, file = os.path.split(filename[0])
+        self.main_widget.outputfolder.setText(os.path.join(path, "YNAB"))
         self.main_widget.outputfile.setText("YNAB_{}".format(file))
 
     def outputfolderDialog(self):
-        foldername = QFileDialog.getExistingDirectory(self, 'Select output folder')
-        self.main_widget.outputfolder.setText(foldername)  
+        foldername = QFileDialog.getExistingDirectory(
+            self, 'Select output folder')
+        self.main_widget.outputfolder.setText(foldername)
 
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
 
 class MainWidget(QWidget):
 
@@ -116,31 +123,38 @@ class MainWidget(QWidget):
     def convertAction(self):
         converter = Converter(inputfile=self.inputfile.text())
         converter.convert()
-        converter.write_outputfile(self.outputfolder.text(), self.outputfile.text())
+        converter.write_outputfile(
+            self.outputfolder.text(), self.outputfile.text())
+
 
 class Converter():
 
     def __init__(self, inputfile):
-        self.inputdata = pd.read_csv(inputfile, parse_dates = [0])
-        self.outputdata = pd.DataFrame(index=self.inputdata.index, columns=EXPORT_COLUMNS, data=None)
+        self.inputdata = pd.read_csv(inputfile, parse_dates=[0])
+        self.outputdata = pd.DataFrame(
+            index=self.inputdata.index, columns=EXPORT_COLUMNS, data=None)
 
     def convert(self):
         self.outputdata['Date'] = self.inputdata['Datum']
         self.outputdata['Payee'] = self.inputdata['Naam / Omschrijving']
         self.outputdata['Memo'] = self.inputdata['Mededelingen']
-        self.outputdata['Outflow'] = self.inputdata[self.inputdata['Af Bij'] == 'Af']['Bedrag (EUR)']
-        self.outputdata['Inflow'] = self.inputdata[self.inputdata['Af Bij'] == 'Bij']['Bedrag (EUR)']
+        self.outputdata['Outflow'] = self.inputdata[self.inputdata['Af Bij']
+                                                    == 'Af']['Bedrag (EUR)']
+        self.outputdata['Inflow'] = self.inputdata[self.inputdata['Af Bij']
+                                                   == 'Bij']['Bedrag (EUR)']
         self.outputdata.fillna('', inplace=True)
 
     def write_outputfile(self, outputfolder, outputfile):
         os.makedirs(outputfolder, exist_ok=True)
         self.outputdata.to_csv(os.path.join(outputfolder, outputfile))
 
+
 def main():
     app = QApplication(sys.argv)
     win = MainWindow()
     win.show()
     app.exec_()
+
 
 if __name__ == '__main__':
     sys.exit(main())
