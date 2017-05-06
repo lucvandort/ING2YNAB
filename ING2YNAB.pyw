@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Main executable for ING2YNAB csv converter.
 
@@ -14,18 +13,10 @@ from PyQt5.QtWidgets import QAction, QMainWindow, QWidget, QLabel, QLineEdit, QP
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
 
-EXPORT_COLUMNS = [
-    "Date",
-    "Payee",
-    "Category",
-    "Memo",
-    "Outflow",
-    "Inflow"
-]
+EXPORT_COLUMNS = ["Date", "Payee", "Category", "Memo", "Outflow", "Inflow"]
 
 
 class MainWindow(QMainWindow):
-
     def __init__(self):
         super(MainWindow, self).__init__()
         self.main_widget = MainWidget(self)
@@ -62,8 +53,8 @@ class MainWindow(QMainWindow):
         self.main_widget.outputfile.setText("YNAB_{}".format(file))
 
     def outputfolderDialog(self):
-        foldername = QFileDialog.getExistingDirectory(
-            self, 'Select output folder')
+        foldername = QFileDialog.getExistingDirectory(self,
+                                                      'Select output folder')
         self.main_widget.outputfolder.setText(foldername)
 
     def center(self):
@@ -74,7 +65,6 @@ class MainWindow(QMainWindow):
 
 
 class MainWidget(QWidget):
-
     def __init__(self, parent):
         super(MainWidget, self).__init__(parent)
         self.__controls()
@@ -123,12 +113,11 @@ class MainWidget(QWidget):
     def convertAction(self):
         converter = Converter(inputfile=self.inputfile.text())
         converter.convert()
-        converter.write_outputfile(
-            self.outputfolder.text(), self.outputfile.text())
+        converter.write_outputfile(self.outputfolder.text(),
+                                   self.outputfile.text())
 
 
 class Converter():
-
     def __init__(self, inputfile):
         self.inputdata = pd.read_csv(inputfile, parse_dates=[0])
         self.outputdata = pd.DataFrame(
@@ -138,10 +127,10 @@ class Converter():
         self.outputdata['Date'] = self.inputdata['Datum']
         self.outputdata['Payee'] = self.inputdata['Naam / Omschrijving']
         self.outputdata['Memo'] = self.inputdata['Mededelingen']
-        self.outputdata['Outflow'] = self.inputdata[self.inputdata['Af Bij']
-                                                    == 'Af']['Bedrag (EUR)']
-        self.outputdata['Inflow'] = self.inputdata[self.inputdata['Af Bij']
-                                                   == 'Bij']['Bedrag (EUR)']
+        self.outputdata['Outflow'] = self.inputdata[self.inputdata['Af Bij'] ==
+                                                    'Af']['Bedrag (EUR)']
+        self.outputdata['Inflow'] = self.inputdata[self.inputdata['Af Bij'] ==
+                                                   'Bij']['Bedrag (EUR)']
         self.outputdata.fillna('', inplace=True)
 
     def write_outputfile(self, outputfolder, outputfile):
