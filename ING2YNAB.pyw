@@ -133,6 +133,7 @@ class Converter():
         self.outputdata.fillna('', inplace=True)
 
     def write_outputfile(self, outputfolder, outputfile):
+        os.makedirs(outputfolder, exist_ok=True)
         self.outputdata.to_csv(os.path.join(outputfolder, outputfile))
 
 def main():
